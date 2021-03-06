@@ -51,6 +51,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Resources.Upsert
 
         public async Task<UpsertResourceResponse> Handle(ConditionalUpsertResourceRequest message, CancellationToken cancellationToken = default)
         {
+            Console.WriteLine("Enter ConditionalUpsertResourceHandler...");
             EnsureArg.IsNotNull(message, nameof(message));
 
             if (await AuthorizationService.CheckAccess(DataActions.Read | DataActions.Write) != (DataActions.Read | DataActions.Write))

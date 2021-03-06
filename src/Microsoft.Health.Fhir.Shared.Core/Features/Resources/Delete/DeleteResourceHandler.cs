@@ -33,6 +33,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Resources.Delete
 
         public async Task<DeleteResourceResponse> Handle(DeleteResourceRequest message, CancellationToken cancellationToken)
         {
+            Console.WriteLine("Enter DeleteResourceHandler...");
             EnsureArg.IsNotNull(message, nameof(message));
 
             DataActions requiredDataAction = message.HardDelete ? DataActions.Delete | DataActions.HardDelete : DataActions.Delete;
