@@ -20,11 +20,13 @@ services:
       - sql
   sql:
     image: "mcr.microsoft.com/mssql/server"
+    ports:
+      - "1433:1433" 
     environment:
       SA_PASSWORD: ${SAPASSWORD}
       ACCEPT_EULA: "Y"
     healthcheck:
-        test: ["CMD", "/opt/mssql-tools/bin/sqlcmd","-U sa -P ${SAPASSWORD} -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'"]
+        test: ["CMD", "/opt/mssql-tools/bin/sqlcmd","-U sa -S localhost,1433 -P ${SAPASSWORD} -Q 'SELECT * FROM INFORMATION_SCHEMA.TABLES'"]
         interval: 10s
         timeout: 10s
         retries: 6

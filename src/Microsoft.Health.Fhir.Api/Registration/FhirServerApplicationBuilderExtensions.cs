@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Builder
 
             public async Task Invoke(HttpContext context)
             {
+                Console.WriteLine("Run this middleware: PathBaseMiddleware");
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));

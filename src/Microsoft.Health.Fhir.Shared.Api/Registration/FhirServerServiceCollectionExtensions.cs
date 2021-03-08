@@ -177,6 +177,9 @@ namespace Microsoft.Extensions.DependencyInjection
                     // It should also be after authentication
                     app.UseThrottling();
 
+                    // Add Event triggering point
+                    app.UseEventsMiddleware();
+
                     next(app);
                 };
             }
