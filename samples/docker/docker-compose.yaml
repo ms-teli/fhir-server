@@ -1,6 +1,6 @@
 version: "3"
 services:
-  fhir-api:
+  fhir-api-sql:
     build: 
       context: ./../../
       dockerfile: ./build/docker/Dockerfile
@@ -15,7 +15,7 @@ services:
       SqlServer__SchemaOptions__AutomaticUpdatesEnabled: "true"
       DataStore: "SqlServer"
     ports:     
-      - "8080:8080"
+      - "6060:6060"
     depends_on:
       - sql
   sql:
