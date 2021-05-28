@@ -194,14 +194,14 @@
         },
         "eventTopic": {
             "type": "string",
-            "defaultValue": false,
+            "defaultValue": "",
             "metadata": {
                 "description": "Event Topic url"
             }
         },
         "eventTopicAccess": {
             "type": "string",
-            "defaultValue": false,
+            "defaultValue": "",
             "metadata": {
                 "description": "Event Topic access"
             }
