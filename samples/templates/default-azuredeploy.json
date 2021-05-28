@@ -191,6 +191,20 @@
             "metadata": {
                 "description": "Determines whether the $reindex operation will be enabled for this fhir instance."
             }
+        },
+        "eventTopic": {
+            "type": "string",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Event Topic url"
+            }
+        },
+        "eventTopicAccess": {
+            "type": "string",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Event Topic access"
+            }
         }
     },
     "variables": {
@@ -228,7 +242,9 @@
             "FhirServer:Operations:Export:StorageAccountUri": "[if(parameters('enableExport'), concat('https://', variables('storageAccountName'), variables('blobStorageUri')), 'null')]",
             "FhirServer:Operations:ConvertData:Enabled": "[parameters('enableConvertData')]",
             "FhirServer:Operations:ConvertData:ContainerRegistryServers:0": "[if(parameters('enableConvertData'), concat(variables('azureContainerRegistryName'), variables('azureContainerRegistryUri')), 'null')]",
-            "FhirServer:Operations:Reindex:Enabled": "[parameters('enableReindex')]"
+            "FhirServer:Operations:Reindex:Enabled": "[parameters('enableReindex')]",
+            "FhirServer:Operations:Event:EventTopic": "[parameters('eventTopic')]",
+            "FhirServer:Operations:Event:EventTopicAccess": "[parameters('eventTopicAccess')]"
         },
         "combinedFhirServerConfigProperties": "[union(variables('staticFhirServerConfigProperties'), parameters('additionalFhirServerConfigProperties'))]",
         "computedSqlServerReference": "[concat('Microsoft.Sql/servers/', variables('serviceName'))]",

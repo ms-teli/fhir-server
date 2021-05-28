@@ -74,7 +74,7 @@ RUN set -x && \
     adduser -S -D -H -s /sbin/nologin -G nonroot -g nonroot nonroot
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
-    ASPNETCORE_URLS=http://+:6060
+    ASPNETCORE_URLS=http://+:8080
 
 WORKDIR /app
 COPY --from=build /build .
@@ -82,5 +82,5 @@ COPY --from=build /build .
 RUN ln -s "Microsoft.Health.Fhir.${FHIR_VERSION}.Web.dll" "Microsoft.Health.Fhir.Web.dll"
 
 USER nonroot
-EXPOSE 6060 
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "Microsoft.Health.Fhir.Web.dll"]

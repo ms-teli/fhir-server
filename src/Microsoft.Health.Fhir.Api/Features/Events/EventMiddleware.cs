@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.EventGrid;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Health.Fhir.Api.Extensions;
+using Microsoft.Health.Fhir.Core.Configs;
 using Microsoft.Health.Fhir.Core.Features.Context;
 
 namespace Microsoft.Health.Fhir.Api.Features.Events
@@ -23,9 +25,13 @@ namespace Microsoft.Health.Fhir.Api.Features.Events
         private readonly IMediator _mediator;
         private readonly ILogger<EventMiddleware> _logger;
 
+        private readonly string _topicUrl;
+        private readonly string _topicAccessKey;
+
         public EventMiddleware(
             IFhirRequestContextAccessor fhirRequestContextAccessor,
             IMediator mediator,
+            IOptions<OperationsConfiguration> operationsConfig,
             ILogger<EventMiddleware> logger)
         {
             EnsureArg.IsNotNull(fhirRequestContextAccessor, nameof(fhirRequestContextAccessor));
@@ -35,6 +41,9 @@ namespace Microsoft.Health.Fhir.Api.Features.Events
             _fhirRequestContextAccessor = fhirRequestContextAccessor;
             _mediator = mediator;
             _logger = logger;
+
+            _topicUrl = operationsConfig.Value.Event.EventTopic;
+            _topicAccessKey = operationsConfig.Value.Event.EventTopicAccess;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -55,8 +64,8 @@ namespace Microsoft.Health.Fhir.Api.Features.Events
             IFhirRequestContext fhirRequestContext = _fhirRequestContextAccessor.FhirRequestContext;
 
             // Can get from RP.
-            string topicEndpoint = "https://my-fhir-topic.westus-1.eventgrid.azure.net/api/events";
-            string topicKey = "derwvGAQBlFO9KtlLLEH0K/wK0Nq9eI1r6zZedu9o/U=";
+            string topicEndpoint = _topicUrl;
+            string topicKey = _topicAccessKey;
             string topicHostname = new Uri(topicEndpoint).Host;
 
             if (!(context.Response.StatusCode == 200 || context.Response.StatusCode == 201 || context.Response.StatusCode == 204))
