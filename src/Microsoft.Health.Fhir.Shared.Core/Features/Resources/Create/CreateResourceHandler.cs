@@ -45,7 +45,6 @@ namespace Microsoft.Health.Fhir.Core.Features.Resources.Create
 
         public async Task<UpsertResourceResponse> Handle(CreateResourceRequest message, CancellationToken cancellationToken)
         {
-            Console.WriteLine("Enter CreateResourceHandler...");
             EnsureArg.IsNotNull(message, nameof(message));
 
             if (await AuthorizationService.CheckAccess(DataActions.Write) != DataActions.Write)

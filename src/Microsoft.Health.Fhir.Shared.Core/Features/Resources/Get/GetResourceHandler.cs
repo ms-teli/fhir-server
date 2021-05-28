@@ -32,7 +32,6 @@ namespace Microsoft.Health.Fhir.Core.Features.Resources.Get
 
         public async Task<GetResourceResponse> Handle(GetResourceRequest message, CancellationToken cancellationToken)
         {
-            Console.WriteLine("Enter GetResourceHandler...");
             EnsureArg.IsNotNull(message, nameof(message));
 
             if (await AuthorizationService.CheckAccess(DataActions.Read) != DataActions.Read)

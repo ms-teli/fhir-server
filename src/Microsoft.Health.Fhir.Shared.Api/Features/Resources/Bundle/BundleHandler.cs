@@ -165,7 +165,6 @@ namespace Microsoft.Health.Fhir.Api.Features.Resources.Bundle
 
         public async Task<BundleResponse> Handle(BundleRequest bundleRequest, CancellationToken cancellationToken)
         {
-            Console.WriteLine("Enter BundleHandler...");
             EnsureArg.IsNotNull(bundleRequest, nameof(bundleRequest));
 
             // In scenarios where access checks involve a remote service call, it is advantageous
@@ -204,8 +203,6 @@ namespace Microsoft.Health.Fhir.Api.Features.Resources.Bundle
 
                 if (_bundleType == BundleType.Transaction)
                 {
-                    Console.WriteLine("Enter BundleTransactionHandler...");
-
                     // For resources within a transaction, we need to validate if they are referring to each other and throw an exception in such case.
                     await _transactionBundleValidator.ValidateBundle(bundleResource, _referenceIdDictionary, cancellationToken);
 
@@ -231,7 +228,6 @@ namespace Microsoft.Health.Fhir.Api.Features.Resources.Bundle
         {
             try
             {
-                Console.WriteLine("_transactionHandler type: " + _transactionHandler.GetType().ToString());
                 using (var transaction = _transactionHandler.BeginTransaction())
                 {
                     await ExecuteAllRequests(responseBundle);
