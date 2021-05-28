@@ -19,7 +19,7 @@ namespace Microsoft.Health.Fhir.SqlServer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -79,6 +79,15 @@ namespace Microsoft.Health.Fhir.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Only &apos;_type&apos; and &apos;_lastUpdated&apos; can be used together as sorting parameters (and in that order)..
+        /// </summary>
+        internal static string OnlyTypeAndLastUpdatedSupportedForCompoundSort {
+            get {
+                return ResourceManager.GetString("OnlyTypeAndLastUpdatedSupportedForCompoundSort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot carry out the SQL datastore operation because the SQL schema needs to be upgraded..
         /// </summary>
         internal static string SchemaVersionNeedsToBeUpgraded {
@@ -106,11 +115,29 @@ namespace Microsoft.Health.Fhir.SqlServer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The SearchParameter with type {0} is not supported by SQL server..
+        /// </summary>
+        internal static string SearchParameterTypeNotSupportedBySQLServer {
+            get {
+                return ResourceManager.GetString("SearchParameterTypeNotSupportedBySQLServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was an internal server error while processing the transaction..
         /// </summary>
         internal static string TransactionProcessingException {
             get {
                 return ResourceManager.GetString("TransactionProcessingException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both _type and _lastUpdated must have the same sort direction (_sort=_type,_lastUpdated or _sort=-_type,-_lastUpdated).
+        /// </summary>
+        internal static string TypeAndLastUpdatedMustHaveSameSortDirection {
+            get {
+                return ResourceManager.GetString("TypeAndLastUpdatedMustHaveSameSortDirection", resourceCulture);
             }
         }
     }

@@ -32,6 +32,7 @@ using Microsoft.Health.Fhir.Core.Models;
 using Microsoft.Health.Fhir.Tests.Common;
 using Microsoft.Health.Fhir.Tests.Common.FixtureParameters;
 using Microsoft.Health.Fhir.Tests.Common.Mocks;
+using Microsoft.Health.SqlServer.Features.Schema;
 using NSubstitute;
 using Xunit;
 using ResourceType = Hl7.Fhir.Model.ResourceType;
@@ -91,6 +92,12 @@ namespace Microsoft.Health.Fhir.Tests.Integration.Persistence
 
         public SupportedSearchParameterDefinitionManager SupportedSearchParameterDefinitionManager => _fixture.GetRequiredService<SupportedSearchParameterDefinitionManager>();
 
+        public SchemaInitializer SchemaInitializer => _fixture.GetRequiredService<SchemaInitializer>();
+
+        public SchemaUpgradeRunner SchemaUpgradeRunner => _fixture.GetRequiredService<SchemaUpgradeRunner>();
+
+        public SearchParameterStatusManager SearchParameterStatusManager => _fixture.GetRequiredService<SearchParameterStatusManager>();
+
         public void Dispose()
         {
             (_fixture as IDisposable)?.Dispose();
@@ -116,7 +123,7 @@ namespace Microsoft.Health.Fhir.Tests.Integration.Persistence
             organizationResource.Versioning = CapabilityStatement.ResourceVersionPolicy.NoVersion;
 
             ConformanceProvider = Substitute.For<ConformanceProviderBase>();
-            ConformanceProvider.GetCapabilityStatementAsync().Returns(CapabilityStatement.ToTypedElement().ToResourceElement());
+            ConformanceProvider.GetCapabilityStatementOnStartup().Returns(CapabilityStatement.ToTypedElement().ToResourceElement());
 
             // TODO: FhirRepository instantiate ResourceDeserializer class directly
             // which will try to deserialize the raw resource. We should mock it as well.
@@ -129,6 +136,11 @@ namespace Microsoft.Health.Fhir.Tests.Integration.Persistence
                 {
                     ResourceElement resource = x.ArgAt<ResourceElement>(0);
                     var searchParamHash = SearchParameterDefinitionManager.GetSearchParameterHashForResourceType(resource.InstanceType);
+
+                    if (string.IsNullOrEmpty(searchParamHash))
+                    {
+                        searchParamHash = "hash";
+                    }
 
                     return new ResourceWrapper(resource, rawResourceFactory.Create(resource, keepMeta: true), new ResourceRequest(HttpMethod.Post, "http://fhir"), x.ArgAt<bool>(1), null, null, null, searchParamHash);
                 });

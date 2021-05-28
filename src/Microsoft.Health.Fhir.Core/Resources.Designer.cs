@@ -214,6 +214,15 @@ namespace Microsoft.Health.Fhir.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The _count parameter must be between {0} and {1}..
+        /// </summary>
+        internal static string ConditionalDeleteCountOutOfRange {
+            get {
+                return ResourceManager.GetString("ConditionalDeleteCountOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operation was not attempted because search criteria was not selective enough..
         /// </summary>
         internal static string ConditionalOperationNotSelectiveEnough {
@@ -364,6 +373,15 @@ namespace Microsoft.Health.Fhir.Core {
         internal static string ExportFormatNotFound {
             get {
                 return ResourceManager.GetString("ExportFormatNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to anonymize resource. The job will be marked as failed. {0}.
+        /// </summary>
+        internal static string FailedToAnonymizeResource {
+            get {
+                return ResourceManager.GetString("FailedToAnonymizeResource", resourceCulture);
             }
         }
         
@@ -530,6 +548,24 @@ namespace Microsoft.Health.Fhir.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The phase &apos;{0}&apos; in $everything operation is invalid..
+        /// </summary>
+        internal static string InvalidEverythingOperationPhase {
+            get {
+                return ResourceManager.GetString("InvalidEverythingOperationPhase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;handling&apos; value &apos;{0}&apos; is invalid. The supported values are: {1}..
+        /// </summary>
+        internal static string InvalidHandlingValue {
+            get {
+                return ResourceManager.GetString("InvalidHandlingValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The count must be greater than zero..
         /// </summary>
         internal static string InvalidSearchCountSpecified {
@@ -580,6 +616,24 @@ namespace Microsoft.Health.Fhir.Core {
         internal static string MalformedSearchValue {
             get {
                 return ResourceManager.GetString("MalformedSearchValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found multiple matches, narrow search criteria..
+        /// </summary>
+        internal static string MemberMatchMultipleMatchesFound {
+            get {
+                return ResourceManager.GetString("MemberMatchMultipleMatchesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No match found..
+        /// </summary>
+        internal static string MemberMatchNoMatchFound {
+            get {
+                return ResourceManager.GetString("MemberMatchNoMatchFound", resourceCulture);
             }
         }
         
@@ -746,6 +800,24 @@ namespace Microsoft.Health.Fhir.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more resources to be reindexed were not found, indicating that they have been deleted since the reindex job kicked off..
+        /// </summary>
+        internal static string ReindexingResourceNotFound {
+            get {
+                return ResourceManager.GetString("ReindexingResourceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The version of one or more resources did not match, indicating that they have been updated since the reindex job kicked off..
+        /// </summary>
+        internal static string ReindexingResourceVersionConflict {
+            get {
+                return ResourceManager.GetString("ReindexingResourceVersionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reindex job id {0} is in state {1} and cannot be cancelled..
         /// </summary>
         internal static string ReindexJobInCompletedState {
@@ -895,6 +967,15 @@ namespace Microsoft.Health.Fhir.Core {
         internal static string SearchParameterDefinitionComponentReferenceCannotBeComposite {
             get {
                 return ResourceManager.GetString("SearchParameterDefinitionComponentReferenceCannotBeComposite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A search parameter with the same code value &apos;{0}&apos; already exists for base type &apos;{1}&apos;..
+        /// </summary>
+        internal static string SearchParameterDefinitionConflictingCodeValue {
+            get {
+                return ResourceManager.GetString("SearchParameterDefinitionConflictingCodeValue", resourceCulture);
             }
         }
         
@@ -1111,6 +1192,15 @@ namespace Microsoft.Health.Fhir.Core {
         internal static string UnableToSetSecret {
             get {
                 return ResourceManager.GetString("UnableToSetSecret", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt to update SearchParameter {0} failed..
+        /// </summary>
+        internal static string UnableToUpdateSearchParameter {
+            get {
+                return ResourceManager.GetString("UnableToUpdateSearchParameter", resourceCulture);
             }
         }
         

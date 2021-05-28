@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Health.Fhir.Core.Models;
+using Microsoft.Health.Fhir.ValueSets;
 
 namespace Microsoft.Health.Fhir.Core.Features.Conformance.Models
 {
@@ -19,11 +20,12 @@ namespace Microsoft.Health.Fhir.Core.Features.Conformance.Models
             SearchRevInclude = new HashSet<string>(StringComparer.Ordinal);
             SearchInclude = new HashSet<string>(StringComparer.Ordinal);
             ReferencePolicy = new HashSet<string>(StringComparer.Ordinal);
+            SupportedProfile = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             Operation = new HashSet<OperationComponent>(new PropertyEqualityComparer<OperationComponent>(x => x.Name, x => x.Definition.ToString()));
 
             ConditionalUpdate = false;
             ConditionalCreate = false;
-            ConditionalDelete = new HashSet<string>(StringComparer.Ordinal);
+            ConditionalDelete = new DefaultOptionHashSet<string>(ConditionalDeleteStatus.Single, StringComparer.Ordinal);
             ConditionalRead = new HashSet<string>(StringComparer.Ordinal);
         }
 
@@ -38,6 +40,8 @@ namespace Microsoft.Health.Fhir.Core.Features.Conformance.Models
         public string Type { get; set; }
 
         public ReferenceComponent Profile { get; set; }
+
+        public ICollection<string> SupportedProfile { get; }
 
         public ICollection<ResourceInteractionComponent> Interaction { get; }
 

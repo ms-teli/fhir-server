@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Specification;
 using Microsoft.Health.Fhir.Client;
 using Microsoft.Health.Fhir.Core.Extensions;
 using Microsoft.Health.Fhir.Core.Features;
@@ -476,11 +478,11 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest.Search
             string[] elements = { "gender", "birthDate" };
             var tag = new Coding(string.Empty, Guid.NewGuid().ToString());
 
-            Patient[] patients = await CreatePatientsWithSpecifiedElements(tag, elements);
+            Observation[] observations = await CreateObservationWithSpecifiedElements(tag, elements);
 
-            Bundle bundle = await Client.SearchAsync($"Patient?_tag={tag.Code}&_elements={string.Join(',', elements)}");
+            Bundle bundle = await Client.SearchAsync($"Observation?_tag={tag.Code}&_elements={string.Join(',', elements)}");
 
-            ValidateBundle(bundle, patients);
+            ValidateBundle(bundle, observations);
         }
 
         [Fact]
@@ -490,11 +492,11 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest.Search
             string[] elements = { "gender", "birthDate" };
             var tag = new Coding(string.Empty, Guid.NewGuid().ToString());
 
-            Patient[] patients = await CreatePatientsWithSpecifiedElements(tag, elements);
+            Observation[] observations = await CreateObservationWithSpecifiedElements(tag, elements);
 
-            Bundle bundle = await Client.SearchAsync($"Patient?_tag={tag.Code}&_elements=invalidProperty,{string.Join(',', elements)}");
+            Bundle bundle = await Client.SearchAsync($"Observation?_tag={tag.Code}&_elements=invalidProperty,{string.Join(',', elements)}");
 
-            ValidateBundle(bundle, patients);
+            ValidateBundle(bundle, observations);
         }
 
         [InlineData("id", "count")]
@@ -522,11 +524,11 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest.Search
             string[] elements = { "gender", "birthDate" };
             var tag = new Coding(string.Empty, Guid.NewGuid().ToString());
 
-            Patient[] patients = await CreatePatientsWithSpecifiedElements(tag, elements);
+            Observation[] observations = await CreateObservationWithSpecifiedElements(tag, elements);
 
-            Bundle bundle = await Client.SearchAsync($"Patient?_tag={tag.Code}&_elements={string.Join(',', elements)}&_summary=false");
+            Bundle bundle = await Client.SearchAsync($"Observation?_tag={tag.Code}&_elements={string.Join(',', elements)}&_summary=false");
 
-            ValidateBundle(bundle, patients);
+            ValidateBundle(bundle, observations);
         }
 
         [Fact]
@@ -775,21 +777,169 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest.Search
             Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
-        private async Task<Patient[]> CreatePatientsWithSpecifiedElements(Coding tag, string[] elements)
+        [Fact]
+        public async Task GivenASearchRequestWithInvalidParameters_WhenHandled_ReturnsSearchResults()
+        {
+            string[] expectedDiagnostics =
+            {
+                string.Format(Core.Resources.SearchParameterNotSupported, "Cookie", "Patient"),
+                string.Format(Core.Resources.SearchParameterNotSupported, "Ramen", "Patient"),
+            };
+            OperationOutcome.IssueType[] expectedCodeTypes = { OperationOutcome.IssueType.NotSupported, OperationOutcome.IssueType.NotSupported };
+            OperationOutcome.IssueSeverity[] expectedIssueSeverities = { OperationOutcome.IssueSeverity.Warning, OperationOutcome.IssueSeverity.Warning };
+
+            Bundle bundle = await Client.SearchAsync("Patient?Cookie=Chip&Ramen=Spicy");
+            OperationOutcome outcome = GetAndValidateOperationOutcome(bundle);
+            ValidateOperationOutcome(expectedDiagnostics, expectedIssueSeverities, expectedCodeTypes, outcome);
+        }
+
+        [Fact]
+        public async Task GivenASearchRequestWithInvalidParametersAndLenientHandling_WhenHandled_ReturnsSearchResults()
+        {
+            string[] expectedDiagnostics =
+            {
+                string.Format(Core.Resources.SearchParameterNotSupported, "Cookie", "Patient"),
+                string.Format(Core.Resources.SearchParameterNotSupported, "Ramen", "Patient"),
+            };
+            OperationOutcome.IssueType[] expectedCodeTypes = { OperationOutcome.IssueType.NotSupported, OperationOutcome.IssueType.NotSupported };
+            OperationOutcome.IssueSeverity[] expectedIssueSeverities = { OperationOutcome.IssueSeverity.Warning, OperationOutcome.IssueSeverity.Warning };
+
+            Bundle bundle = await Client.SearchAsync("Patient?Cookie=Chip&Ramen=Spicy", Tuple.Create(KnownHeaders.Prefer, "handling=lenient"));
+            OperationOutcome outcome = GetAndValidateOperationOutcome(bundle);
+            ValidateOperationOutcome(expectedDiagnostics, expectedIssueSeverities, expectedCodeTypes, outcome);
+        }
+
+        [Fact]
+        public async Task GivenASearchRequestWithInvalidParametersAndStrictHandling_WhenHandled_ReturnsBadRequest()
+        {
+            using FhirException ex = await Assert.ThrowsAsync<FhirException>(() =>
+                Client.SearchAsync("Patient?Cookie=Chip&Ramen=Spicy", Tuple.Create(KnownHeaders.Prefer, "handling=strict")));
+            Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        }
+
+        [Fact]
+        public async Task GivenASearchRequestWithValidParametersAndStrictHandling_WhenHandled_ReturnsSearchResults()
+        {
+            var response = await Client.SearchAsync("Patient?name=ronda", Tuple.Create(KnownHeaders.Prefer, "handling=strict"));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GivenASearchRequestWithInvalidHandling_WhenHandled_ReturnsBadRequest()
+        {
+            using FhirException ex = await Assert.ThrowsAsync<FhirException>(() =>
+                Client.SearchAsync("Patient?Cookie=Chip&Ramen=Spicy", Tuple.Create(KnownHeaders.Prefer, "handling=foo")));
+            Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        }
+
+        [Fact]
+        public async Task GivenSetOfChunkyResources_WhenIteratingOverThem_ThenAllResourcesReturned()
+        {
+            int n = 30;
+            var tag = Guid.NewGuid().ToString();
+            var sb = new StringBuilder();
+            for (int i = 0; i < 500_000; i++)
+            {
+                sb.Append('A');
+            }
+
+            var text = "<div>" + sb.ToString() + "</div>";
+
+            for (int i = 0; i < n; i++)
+            {
+                var observation = await Client.CreateResourcesAsync<Observation>(() => new Observation()
+                {
+                    Meta = new Meta { Tag = new List<Coding> { new Coding(null, tag) } },
+                    Status = ObservationStatus.Final,
+                    Text = new Narrative() { Div = text },
+                    Code = new CodeableConcept("http://loinc.org", "11557-6"),
+                    Value = new Quantity(i, "kPa"),
+                });
+            }
+
+            List<int> values = new();
+            int count = 0;
+            string nextLink = $"Observation?_count=20&_tag={tag}";
+            do
+            {
+                Bundle firstBundle = await Client.SearchAsync(nextLink);
+                foreach (var entity in firstBundle.Entry)
+                {
+                    values.Add((int)((Quantity)((Observation)entity.Resource).Value).Value);
+                }
+
+                count += firstBundle.Entry.Count;
+                nextLink = firstBundle.NextLink?.ToString();
+            }
+            while (nextLink != null);
+            Assert.Equal(n, count);
+            Assert.Equal(Enumerable.Range(0, n), values.OrderBy(x => x));
+        }
+
+        [Fact]
+        public async Task GivenSetOfChunkyResources_WhenIteratingOverThemWithSort_ThenAllResourcesReturned()
+        {
+            int n = 30;
+            var tag = Guid.NewGuid().ToString();
+            var sb = new StringBuilder();
+            for (int i = 0; i < 500_000; i++)
+            {
+                sb.Append('A');
+            }
+
+            var text = "<div>" + sb.ToString() + "</div>";
+            var date = new DateTime(2000, 01, 01);
+            for (int i = 0; i < n; i++)
+            {
+                var observation = await Client.CreateResourcesAsync<Patient>(() => new Patient()
+                {
+                    Meta = new Meta { Tag = new List<Coding> { new Coding(null, tag) } },
+                    BirthDate = date.AddDays(i).ToString("yyyy-MM-dd"),
+                    Text = new Narrative() { Div = text },
+                });
+            }
+
+            List<int> values = new();
+            int count = 0;
+            string nextLink = $"Patient?_count=20&_tag={tag}&_sort=-_lastUpdated";
+            do
+            {
+                Bundle firstBundle = await Client.SearchAsync(nextLink);
+                foreach (var entity in firstBundle.Entry)
+                {
+                    values.Add(DateTime.Parse(((Patient)entity.Resource).BirthDate).Subtract(date).Days);
+                }
+
+                count += firstBundle.Entry.Count;
+                nextLink = firstBundle.NextLink?.ToString();
+            }
+            while (nextLink != null);
+            Assert.Equal(n, count);
+            Assert.Equal(Enumerable.Range(0, n), values.OrderBy(x => x));
+        }
+
+        private async Task<Observation[]> CreateObservationWithSpecifiedElements(Coding tag, string[] elements)
         {
             const int numberOfResources = 3;
+            IStructureDefinitionSummaryProvider summaryProvider = new PocoStructureDefinitionSummaryProvider();
+            var typeinfo = summaryProvider.Provide("Observation");
+            var required = typeinfo.GetElements().Where(e => e.IsRequired).Select(x => x.ElementName).ToList();
+            required.Add("meta");
+            elements = elements.Union(required).ToArray();
 
-            Patient patient = Samples.GetDefaultPatient().ToPoco<Patient>();
-            var patients = new Patient[numberOfResources];
+            Observation patient = Samples.GetDefaultObservation().ToPoco<Observation>();
+            var patients = new Observation[numberOfResources];
 
             for (int i = 0; i < numberOfResources; i++)
             {
                 patient.Meta = new Meta();
                 patient.Meta.Tag.Add(tag);
 
-                FhirResponse<Patient> createdPatient = await Client.CreateAsync(patient);
-                patients[i] = MaskingNode.ForElements(new ScopedNode(createdPatient.Resource.ToTypedElement()), elements)
-                    .ToPoco<Patient>();
+                FhirResponse<Observation> createdObservation = await Client.CreateAsync(patient);
+                patients[i] = MaskingNode.ForElements(new ScopedNode(createdObservation.Resource.ToTypedElement()), elements)
+                    .ToPoco<Observation>();
+                var subsettedTag = new Coding("http://hl7.org/fhir/v3/ObservationValue", "SUBSETTED");
+                patients[i].Meta.Tag.Add(subsettedTag);
             }
 
             return patients;

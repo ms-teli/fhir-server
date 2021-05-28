@@ -89,7 +89,7 @@ namespace Microsoft.Health.Fhir.Core.Features.Search.SearchValues
             }
 
             decimal quantity;
-            if (!decimal.TryParse(parts[0], NumberStyles.Number, CultureInfo.InvariantCulture, out quantity))
+            if (!decimal.TryParse(parts[0], NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out quantity))
             {
                 throw new BadRequestException(string.Format(Core.Resources.MalformedSearchValue, parts[0]));
             }
@@ -147,17 +147,17 @@ namespace Microsoft.Health.Fhir.Core.Features.Search.SearchValues
 
             if (System != null)
             {
-                sb.Append("|").Append(System.EscapeSearchParameterValue());
+                sb.Append('|').Append(System.EscapeSearchParameterValue());
             }
 
             if (Code != null)
             {
                 if (System == null)
                 {
-                    sb.Append("|");
+                    sb.Append('|');
                 }
 
-                sb.Append("|").Append(Code.EscapeSearchParameterValue());
+                sb.Append('|').Append(Code.EscapeSearchParameterValue());
             }
 
             return sb.ToString();

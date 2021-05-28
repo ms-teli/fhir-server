@@ -35,7 +35,6 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest
         [InlineData("Patient/$validate", "Profile-Patient-uscore", "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient")]
         [InlineData("Organization/$validate", "Profile-Organization-uscore", "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization")]
         [InlineData("Organization/$validate", "Profile-Organization-uscore-endpoint", "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization")]
-        [InlineData("CarePlan/$validate", "Profile-CarePlan-uscore", "http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan")]
         [InlineData("Patient/$validate", "Profile-Patient-uscore", null)]
         [InlineData("Organization/$validate", "Profile-Organization-uscore", null)]
         [InlineData("Organization/$validate", "Profile-Organization-uscore-endpoint", null)]
@@ -212,6 +211,27 @@ namespace Microsoft.Health.Fhir.Tests.E2E.Rest
             exception = await Assert.ThrowsAsync<FhirException>(async () => await _client.ValidateAsync("Patient/$validate", parameters.ToJson()));
 
             Assert.Equal(HttpStatusCode.BadRequest, exception.Response.StatusCode);
+        }
+
+        [Fact]
+        public async void GivenPostedProfiles_WhenCallingForMetadata_ThenMetadataHasSupportedProfiles()
+        {
+            using FhirResponse<CapabilityStatement> response = await _client.ReadAsync<CapabilityStatement>("metadata");
+#if !Stu3
+            var supportedProfiles = response.Resource.Rest.Where(r => r.Mode.ToString().Equals("server", StringComparison.OrdinalIgnoreCase)).
+                SelectMany(x => x.Resource.Where(x => x.SupportedProfile.Any()).Select(x => x.SupportedProfile)).
+                SelectMany(x => x).OrderBy(x => x).ToList();
+#else
+            var supportedProfiles = response.Resource.Profile.Select(x => x.Url.ToString()).OrderBy(x => x).ToList();
+#endif
+            Assert.Equal(
+                new[]
+                {
+                    "http://hl7.org/fhir/us/core/StructureDefinition/us-core-careplan",
+                    "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization",
+                    "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient",
+                },
+                supportedProfiles);
         }
 
         private void CheckOperationOutcomeIssue(

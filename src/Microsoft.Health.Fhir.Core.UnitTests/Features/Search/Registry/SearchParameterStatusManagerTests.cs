@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Health.Core;
 using Microsoft.Health.Fhir.Core.Features.Definition;
 using Microsoft.Health.Fhir.Core.Features.Search.Parameters;
@@ -49,7 +50,8 @@ namespace Microsoft.Health.Fhir.Core.UnitTests.Features.Search.Registry
                 _searchParameterStatusDataStore,
                 _searchParameterDefinitionManager,
                 _searchParameterSupportResolver,
-                _mediator);
+                _mediator,
+                NullLogger<SearchParameterStatusManager>.Instance);
 
             _resourceSearchParameterStatuses = new[]
                 {
@@ -115,7 +117,7 @@ namespace Microsoft.Health.Fhir.Core.UnitTests.Features.Search.Registry
         [Fact]
         public async Task GivenASPStatusManager_WhenInitializing_ThenSearchParameterIsUpdatedFromRegistry()
         {
-            await _manager.EnsureInitialized();
+            await _manager.EnsureInitializedAsync(CancellationToken.None);
 
             var list = _searchParameterDefinitionManager.GetSearchParameters("Account").ToList();
 
@@ -143,7 +145,7 @@ namespace Microsoft.Health.Fhir.Core.UnitTests.Features.Search.Registry
         [Fact]
         public async Task GivenASPStatusManager_WhenInitializing_ThenUpdatedSearchParametersInNotification()
         {
-            await _manager.EnsureInitialized();
+            await _manager.EnsureInitializedAsync(CancellationToken.None);
 
             // Id should not be modified in this test case
             var modifiedItems = _searchParameterInfos.Skip(1).ToArray();
@@ -151,18 +153,35 @@ namespace Microsoft.Health.Fhir.Core.UnitTests.Features.Search.Registry
             await _mediator
                 .Received()
                 .Publish(
-                    Arg.Is<SearchParametersUpdated>(x => modifiedItems.Except(x.SearchParameters).Any() == false),
+                    Arg.Is<SearchParametersUpdatedNotification>(x => modifiedItems.Except(x.SearchParameters).Any() == false),
                     Arg.Any<CancellationToken>());
         }
 
         [Fact]
         public async Task GivenASPStatusManager_WhenInitializing_ThenRegistryShouldNotUpdateNewlyFoundParameters()
         {
-            await _manager.EnsureInitialized();
+            await _manager.EnsureInitializedAsync(CancellationToken.None);
 
             await _searchParameterStatusDataStore
                 .DidNotReceive()
                 .UpsertStatuses(Arg.Any<List<ResourceSearchParameterStatus>>());
+        }
+
+        [Fact]
+        public async Task GivenASPStatusManager_WhenInitializingAndResolverThrowsException_ThenCatchItAndReturnFalse()
+        {
+            _searchParameterSupportResolver
+                .IsSearchParameterSupported(Arg.Is(_searchParameterInfos[2]))
+                .Returns(x => throw new FormatException("Unable to resolve"));
+
+            await _manager.EnsureInitializedAsync(CancellationToken.None);
+
+            var list = _searchParameterDefinitionManager.GetSearchParameters("Account").ToList();
+
+            _searchParameterSupportResolver.Received(1).IsSearchParameterSupported(Arg.Is(_searchParameterInfos[2]));
+            Assert.False(list[2].IsSearchable);
+            Assert.False(list[2].IsSupported);
+            Assert.False(list[2].IsPartiallySupported);
         }
     }
 }

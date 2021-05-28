@@ -23,11 +23,6 @@ namespace Microsoft.Health.Fhir.Core.Configs
         public bool SupportsTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to use the ITypedElement based search indexer.
-        /// </summary>
-        public bool UseTypedElementIndexer { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets the default value for IncludeTotal in search bundles.
         /// </summary>
         public TotalType IncludeTotalInBundle { get; set; } = TotalType.None;
@@ -46,5 +41,20 @@ namespace Microsoft.Health.Fhir.Core.Configs
         /// Gets or sets the default value for included search results.
         /// </summary>
         public int DefaultIncludeCountPerSearch { get; set; } = 100;
+
+        /// <summary>
+        /// Gets or sets a value whether we need to run profile validation during resource creation.
+        /// </summary>
+        public bool ProfileValidationOnCreate { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value whether we need to run profile validation during resource update.
+        /// </summary>
+        public bool ProfileValidationOnUpdate { get; set; } = false;
+
+        /// <summary>
+        /// Maximum items allowed to be deleted when using Conditional Delete.
+        /// </summary>
+        public int ConditionalDeleteMaxItems { get; set; } = 100;
     }
 }
